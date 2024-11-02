@@ -8,7 +8,7 @@ import google.generativeai as genai
 app = Flask(__name__)
 storage_client = storage.Client()
 BUCKET_NAME = 'buckettttteyy'
-genai.configure(api_key="AIzaSyAYFV96IdIyOqRyWn6ipxaQiSbn73eEZP8")
+genai.configure(api_key="AIzaSyAYFV96IdIyOqRyWn6ipxaQiSbn73eEZP8") #dont put this while making repo public
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
