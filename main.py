@@ -162,22 +162,22 @@ def serve_image(filename):
 
 @app.route('/image_details/<filename>')
 def image_details(filename):
-    # Normalize filename extension to `.jpg` before converting to `.txt`
-    base_filename, ext = os.path.splitext(filename)
-    if ext.lower() == ".jpeg":
-        filename = base_filename + ".jpg"
+    # Generate the text filename with a consistent base name
+    base_filename = os.path.splitext(filename)[0]
+    text_filename = base_filename + '.txt'
     
-    # Convert the normalized filename to a `.txt` filename
-    text_filename = filename.rsplit('.', 1)[0] + '.txt'
-
     # Fetching the caption and description from the text file
     caption, description = parse_output_from_gcs(text_filename)
+    
+    # Generate the URL for the image
     image_url = url_for('serve_image', filename=filename)
 
-    return render_template('image_details.html', 
-                           image_url=image_url,
-                           caption=caption,
-                           description=description)
+    return render_template(
+        'image_details.html',
+        image_url=image_url,
+        caption=caption,
+        description=description
+    )
 
 if __name__ == '__main__':
 
