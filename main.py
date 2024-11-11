@@ -128,11 +128,11 @@ def upload_file():
             filename = file.filename
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)  # Save the file locally
-            upload_blob(BUCKET_NAME, filepath, filename)  # Upload the image to GCS
-            get_image_details(filepath)  # Generate caption and description
-            
-            # Redirect to the gallery page
-            return redirect(url_for('gallery'))
+            destination_blob_name = filename
+            upload_blob(BUCKET_NAME, filepath, destination_blob_name)  
+            # Call get_image_details to generate caption and description
+            details = get_image_details(filepath)  # Add this line
+            return redirect(url_for('gallery'))  # Redirect to the gallery page after processing
     return render_template('upload.html')
 
 @app.route('/gallery')
@@ -141,19 +141,18 @@ def gallery():
     blob_list = list(blobs)
     image_data = {}
     
-    # Fetch image data
     for blob in blob_list:
-        if blob.name.endswith(('.jpeg', '.jpg', '.png', 'webp')):
+        # Check if the blob is an image file by checking its extension
+        if blob.name.endswith(('.jpeg', '.jpg', '.png' , 'webp')):
             image_bytes = download_blob_into_memory(BUCKET_NAME, blob.name)
-            image_data[blob.name] = image_bytes
-    
+            image_data[blob.name] = image_bytes  # storing images only in the dictionary
+    return render_template('gallery.html', image_data=image_data)
     # Fetch captions and descriptions
     captions = {}
     for filename in image_data.keys():
-        caption, description = parse_output_from_gcs(filename)  
+        text_filename = filename.rsplit('.', 1)[0] + '.txt'
+        caption, description = parse_output_from_gcs(text_filename)  
         captions[filename] = {"caption": caption, "description": description}
-    
-    # Render gallery.html with both image data and captions
     return render_template('gallery.html', image_data=image_data, captions=captions)
 
 @app.route('/images/<filename>')
