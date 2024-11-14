@@ -28,7 +28,7 @@ def upload_to_gemini(path, mime_type=None):
     print(f"Uploaded file '{file.display_name}' as: {file.uri}")
     return file
 
-def get_image_details(image_path):
+'''def get_image_details(image_path):
     """Uploads the image and retrieves caption and description."""
     # Upload the image
     uploaded_file = upload_to_gemini(image_path, mime_type="image/jpeg")
@@ -77,6 +77,63 @@ def get_image_details(image_path):
     except json.JSONDecodeError:
         print("Failed to decode JSON response.")
         print("Response text:", response_text)  # Log the response text
+        return {"caption": "Default Caption", "description": "Default Description"}'''
+def get_image_details(image_path):
+    """Uploads the image and retrieves caption and description."""
+    # Upload the image
+    uploaded_file = upload_to_gemini(image_path, mime_type="image/jpeg")
+    
+    # Create the model configuration
+    generation_config = {
+        "temperature": 1,
+        "top_p": 0.95,
+        "top_k": 64,
+        "max_output_tokens": 8192,
+        "response_mime_type": "text/plain",
+    }
+    
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash",
+        generation_config=generation_config,
+    )
+    
+    # Start a chat session and request caption and description
+    chat_session = model.start_chat(
+        history=[
+            {
+                "role": "user",
+                "parts": [
+                    uploaded_file,
+                    "Describe the image with a short caption (2-3 words) and a description. Provide the output in JSON format with both 'caption' and 'description' fields.",
+                ],
+            }
+        ]
+    )
+
+    # Send the message and get the response
+    response = chat_session.send_message("Describe the image with a short caption (2-3 words) and a description. Provide the output in JSON format.")
+    print("Raw response from API:", response.text)  # Log the raw response
+    
+    # Clean up the response
+    response_text = response.text.strip('```').replace('json', '').strip()  # Clean up the response
+    print("Cleaned response text:", response_text)  # Log the cleaned response
+
+    # Attempt to parse the response
+    try:
+        # Parse JSON and make it case-insensitive
+        details = {k.lower(): v for k, v in json.loads(response_text).items()}
+        
+        caption = details.get("caption", "Default Caption")
+        description = details.get("description", "Default Description")
+        
+        # Save the JSON output to a .txt file in Google Cloud Storage
+        save_full_output_to_gcs(image_path, {"caption": caption, "description": description})
+        
+        return {"caption": caption, "description": description}
+    
+    except json.JSONDecodeError:
+        print("Failed to decode JSON response.")
+        print("Response text:", response_text)  # Log the response text for debugging
         return {"caption": "Default Caption", "description": "Default Description"}
 
 def save_full_output_to_gcs(image_path, details):
