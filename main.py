@@ -64,13 +64,26 @@ def get_image_details(image_path):
     print("Cleaned response text:", response_text)  # Log the cleaned response
 
     # Attempt to parse the response
-    try:
+    '''try:
         details = json.loads(response_text)  # Parse the response as JSON
         caption = details.get("caption", "Default Caption")
         description = details.get("description", "Default Description")
         # Saving the JSON output to a .txt file in Google Cloud Storage
         save_full_output_to_gcs(image_path, {"caption": caption, "description": description})
-        return {"caption": caption, "description": description}
+        return {"caption": caption, "description": description}'''
+    try:
+    # Convert JSON response keys to lowercase to make retrieval case-insensitive
+    details = {k.lower(): v for k, v in json.loads(response_text).items()}
+    
+    # Retrieve caption and description (case-insensitively)
+    caption = details.get("caption", "Default Caption")
+    description = details.get("description", "Default Description")
+    
+    # Saving the JSON output to a .txt file in Google Cloud Storage
+    save_full_output_to_gcs(image_path, {"caption": caption, "description": description})
+    
+    return {"caption": caption, "description": description}
+
 
     except json.JSONDecodeError:
         print("Failed to decode JSON response.")
