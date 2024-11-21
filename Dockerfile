@@ -9,5 +9,7 @@ COPY main.py /project-2
 COPY templates/ /project-2/templates
 
 ENV FLASK_APP=main.py
+ENV PORT=8080 #new change
+EXPOSE 8080 #New change
 
 CMD ["flask", "run", "--host=0.0.0.0", "--port=8080"]
