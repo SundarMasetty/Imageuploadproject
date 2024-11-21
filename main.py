@@ -260,9 +260,6 @@ def image_details(filename):
                            caption=caption,
                            description=description)
 
-@app.route("/")
-def health_check():
-    return "App is running!", 200
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))  # Use Cloud Run's PORT variable
