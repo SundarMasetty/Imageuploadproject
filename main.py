@@ -260,7 +260,11 @@ def image_details(filename):
                            caption=caption,
                            description=description)
 
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=8080)
-    #app.run(debug=True)
+@app.route("/")
+def health_check():
+    return "App is running!", 200
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))  # Use Cloud Run's PORT variable
+    app.run(host="0.0.0.0", port=port)
     
